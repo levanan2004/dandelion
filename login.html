@@ -39,67 +39,43 @@
 <body>
     <div class="login-wrapper" id="login">
         <div class="login-container">
+            <h1>Đăng nhập</h1>
+            <p style="margin: 20px 0;">Đăng nhập vào Dandelion sử dụng Google hoặc Facebook</p>
 
-            <!-- Đăng nhập -->
-            <div class="form-container sign-in-container">
-                <form action="#">
-                    <h1>Đăng nhập vào Dandelion sử dụng Google hoặc Facebook</h1>
-                    <div class="social-container">
-                        <a href="#" class="social"><img src="./wwwroot/images/signin/google-18px.svg" alt="Đăng nhập với Google"></a>
-                        <a href="#" class="social"><img src="./wwwroot/images/signin/facebook-18px.svg" alt="Đăng nhập với Facebook"></a>
-                    </div>
+            <form class="form">
+                <label for="email">Email or Phone</label>
+                <input type="email-phone" id="email" placeholder="Email / Số điện thoại">
 
-                    <span>Hoặc sử dụng tài khoản Email / Số điện thoại</span>
-                    <input type="email-phone" placeholder="Email / Số điện thoại" />
-                    <input type="password" placeholder="Mật khẩu" />
-                    
-                    <a href="#">Bấm vào đây nếu bạn quên mật khẩu?</a>
-                    <button class="submit">Đăng nhập</button>
-                </form>
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Mật khẩu">
+
+                <a href="#">Bấm vào đây nếu bạn quên mật khẩu?</a>
+                <button class="sign-in" type="submit">Đăng nhập</button>
+            </form>
+
+            <div class="centered">
+                <p class="line">or</p>
             </div>
 
-            <!-- Đăng ký -->
-            <div class="form-container sign-up-container">
-                <form action="#">
-                    <h1>Đăng ký tài khoản sử dụng Google hoặc Facebook</h1>
-                    <div class="social-container">
-                        <a href="#" class="social"><img src="./wwwroot/images/signin/google-18px.svg" alt="Đăng ký với Google"></a>
-                        <a href="#" class="social"><img src="./wwwroot/images/signin/facebook-18px.svg" alt="Đăng ký với Facebook"></a>
-                    </div>
+            <div class="social-container">
+                <button type="button" class="google-button">
+                    <img src="./wwwroot/images/signin/google-18px.svg" class="google-icon">
+                    Đăng nhập bằng Google
+                </button>
 
-                    <span>Hoặc sử dụng Email / Số điện thoại</span>
-                    <input type="text" placeholder="Tên hiển thị" />
-                    <input type="email" placeholder="Email / Số điện thoại" />
-                    <input type="password" placeholder="Mật khẩu" />
-
-                    <button class="submit" style="margin-top:10px">Đăng ký</button>
-                    <div class="login_accept-term">Việc bạn đăng ký đồng nghĩa với bạn đã đồng ý với <a href=".//terms.html" target="_top">điều khoản sử dụng</a> của Dandelion.</div>
-                </form>
+                <button type="button" class="google-button">
+                    <img src="./wwwroot/images/signin/facebook-18px.svg" class="google-icon">
+                    Đăng nhập với Facebook
+                </button>
             </div>
 
-            
-            <!-- Chuyển đổi -->
-            <div class="overlay-container">
-                <div class="overlay">
-                    <div class="overlay-panel overlay-left">
-                        <h1>Dandelion Xin chào!</h1>
-                        <p>Nếu bạn đã có tài khoản, hãy đăng nhập</p>
-                        <button class="ghost" id="signIn">Đăng nhập</button>
-                    </div>
-                    <div class="overlay-panel overlay-right">
-                        <h1>Dandelion Xin chào!</h1>
-                        <p>
-                            Nếu bạn chưa có tài khoản, hãy bấm nút đăng ký dưới đây.
-                            Tạo tài khoản để có thể sử dụng tính năng bình luận,
-                            đặt câu hỏi và liên lạc trực tiếp với chúng tôi.
-                        </p>
-                        <button class="ghost" id="signUp">Đăng ký</button>
-                    </div>
-                </div>
+            <div class="centered">
+                <p class="sign-up">Tạo mới tài khoản Dandelion? <a href="">Join now</a></p>
             </div>
 
         </div>
     </div>
+
 
     <!-- Javascript -->
     <script src="./wwwroot/js/login.js"></script>
