@@ -1,0 +1,130 @@
+/* PC */
+@media screen and (min-width: 1024px) {
+    .footer .row {
+        display: flex;
+    }
+
+    .footer .row_tabmobile {
+        display: none;
+    }
+
+    .mobile {
+        display: none;
+    }
+}
+
+/* Tablet */
+@media screen and (min-width: 600px) and (max-width: 1023px) {
+    html {
+      font-size: 55%;
+    }
+
+    .pc {
+        display: none;
+    }
+
+    .mobile {
+        display: block;
+    }
+    
+    /* Search Form */
+    .header .search-form {
+        display: none;
+    }
+
+    /* Button */
+    .sign-in,
+    .sign-up {
+        display: none;
+    }
+
+    /* Main */
+    /* CSS cho phần Giới thiệu hàng hóa */
+    .main-sanpham .main-productlist {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 20px;
+    }
+
+    /* Travel */
+    .main-dulichonhat .travel-post .image-gallery img {
+        width: calc(50% - 6px);
+    }
+
+    .main-dulichonhat .travel-post .image-gallery img:nth-last-child(1) {
+        display: none;
+    } 
+
+    /* Footer */
+    .footer .row {
+        display: none;
+    }
+
+    .footer .row_tabmobile {
+        display: flex;
+    }
+
+    #login-modal {
+        display: none !important;
+    }
+    
+
+}
+  
+/* Mobile */
+@media screen and (max-width: 599px) {
+    html {
+      font-size: 50%;
+    }
+
+    .pc {
+        display: none;
+    }
+
+    .mobile {
+        display: block;
+    }
+
+    /* Search Form */
+    .header .search-form {
+        display: none;
+    }
+
+    /* Button */
+    .sign-in,
+    .sign-up {
+        display: none;
+    }
+
+    /* Main */
+    /* CSS cho phần Giới thiệu hàng hóa */
+    .main-sanpham .main-productlist {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        grid-gap: 20px;
+    }
+
+    /* Travel */
+    .main-dulichonhat .travel-post .image-gallery img {
+        width: calc(100% - 6px);
+    }
+
+    .main-dulichonhat .travel-post .image-gallery img:nth-last-child(-n+2) {
+        display: none;
+    } 
+
+    /* Footer */
+    .footer .row {
+        display: none;
+    }
+
+    .footer .row_tabmobile {
+        display: flex;
+    }
+
+    #login-modal {
+        display: none !important;
+    }
+
+    
+}
