@@ -1,4 +1,5 @@
-import { signIn } from "../firebase/firebase"
+// import { signIn } from "./firebase/firebase"
+import { signIn } from "../../firebase/firebase";
 import classes from "./Login.module.css"
 
 export function Login() {
