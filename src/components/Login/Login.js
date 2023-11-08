@@ -6,15 +6,15 @@ export function Login() {
 
     return (
         <>
-            {/* <button className={classes.button} onClick={onLoginBtnClick} type="button" class="google-button">
+            <button className={classes.button} onClick={onLoginBtnClick} type="button" class="google-button">
                 Đăng nhập bằng Google
             </button>
 
             <button type="button" class="google-button">
                 Đăng nhập với Facebook
-            </button> */}
+            </button>
 
-            <div className="login-wrapper" id="login">
+            {/* <div className="login-wrapper" id="login">
                 <div className="login-container"> 
                     <h1>Đăng nhập</h1> 
                     <p style={{margin: "20px 0"}}>Đăng nhập vào Dandelion sử dụng Google hoặc Facebook</p>
@@ -50,7 +50,7 @@ export function Login() {
                     </div>
 
                 </div>
-            </div>
+            </div> */}
         </>
 
         

@@ -1,9 +1,9 @@
-import logo from './logo.svg';
-import './App.css';
-import { Home } from './Home/Home';
-import { Login } from './Login/Login';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from './firebase/firebase';
+
+import { Home } from './components/Home/Home';
+import { Login } from './Login/Login';
+
 
 function App() { 
   var [isLogin,setLogin] =useState(false)
