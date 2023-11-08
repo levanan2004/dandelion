@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from './firebase/firebase';
+import { onAuthStateChanged2 } from './firebase/firebase';
 
 import { Home } from './components/Home/Home';
-import { Login } from './Login/Login';
+import { Login } from './components/Login/Login';
 
 
 function App() { 
   var [isLogin,setLogin] =useState(false)
 
   useEffect(()=>{
-    onAuthStateChanged(async(user)=>{
+    onAuthStateChanged2(async(user)=>{
       console.log({user})
       console.log(user.email)
       if(user) {
