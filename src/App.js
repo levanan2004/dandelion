@@ -3,13 +3,13 @@ import './App.css';
 import { Home } from './Home/Home';
 import { Login } from './Login/Login';
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged2 } from './firebase/firebase';
+import { onAuthStateChanged } from './firebase/firebase';
 
 function App() { 
   var [isLogin,setLogin] =useState(false)
 
   useEffect(()=>{
-    onAuthStateChanged2(async(user)=>{
+    onAuthStateChanged(async(user)=>{
       console.log({user})
       console.log(user.email)
       if(user) {
@@ -17,7 +17,8 @@ function App() {
       }
     })
   }, [])
-  console.log({isLogin})
+
+
   if (isLogin === true)
   {
     return (
@@ -26,8 +27,6 @@ function App() {
   } else {
     return (
       <Login></Login>
-
-
     )
   }
 
