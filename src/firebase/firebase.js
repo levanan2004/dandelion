@@ -1,6 +1,9 @@
+import firebase from 'firebase/app';
+import 'firebase/analytics';
+import 'firebase/auth';
+import 'firebase/firestore';
 
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
@@ -17,12 +20,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 
-const auth = getAuth(app);
-export const  googleAuthProvider = new GoogleAuthProvider();
-googleAuthProvider.setCustomParameters({
-    prompt: 'select_account'
-})
+// const auth = getAuth(app);
+// export const  googleAuthProvider = new GoogleAuthProvider();
+// googleAuthProvider.setCustomParameters({
+//     prompt: 'select_account'
+// })
 
-export const signIn = () => signInWithPopup(auth, googleAuthProvider);
-export const onAuthStateChanged2 = (cb) => onAuthStateChanged(auth, cb);
+// export const signIn = () => signInWithPopup(auth, googleAuthProvider);
+// export const onAuthStateChanged2 = (cb) => onAuthStateChanged(auth, cb);
 
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+export { db, auth };
+export default firebase;

@@ -1,8 +1,24 @@
 import { signIn } from "../../firebase/firebase";
 import classes from "./Login.module.css"
+import firebase, { auth } from "../../firebase/firebase";
+import { userHistory } from 'react-router-dom';
+
+const fbProvider = firebase.auth.FacebookAuthProvider();
 
 export function Login() {
-    const onLoginBtnClick = signIn;
+    // const onLoginBtnClick = signIn;
+
+    const history = userHistory();
+
+    const onLoginFbBtnClick = () => {
+        auth.signInWithPopup(fbProvider)
+    }
+
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            history.push('/');
+        }
+    });
 
     return (
         <>
@@ -26,12 +42,12 @@ export function Login() {
                     </div>
 
                     <div className={classes["social-container"]}>
-                        <button type="button" className={classes["google-button"]} onClick={onLoginBtnClick}>
+                        <button type="button" className={classes["google-button"]} >
                             <img src="./wwwroot/images/signin/google-18px.svg" className={classes["google-icon"]} />
                             Đăng nhập bằng Google
                         </button>
 
-                        <button type="button" className={classes["google-button"]}>
+                        <button type="button" className={classes["google-button"]} onClick={onLoginFbBtnClick}>
                             <img src="./wwwroot/images/signin/facebook-18px.svg" className={classes["google-icon"]} />
                             Đăng nhập với Facebook
                         </button>
