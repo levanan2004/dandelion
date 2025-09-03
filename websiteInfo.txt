@@ -1,0 +1,42 @@
+Trang chủ
+  ├  Sản Phẩm
+  │    ├  Thuốc & TPCN
+  │    │      ├ TPCN Bổ trợ xương khớp
+                  post-1
+                  post-2
+  │    │      ├ TPCN hỗ trợ dạ dày
+                  post-3
+  │    │      └ ... 
+  │    ├ Mỹ Phẩm
+  │    ├ Thực Phẩm hỗ trọ
+  │    │  
+  │    └ ... 
+  ├  Du Lịch
+       Việt Nam
+         post1
+         post2
+         post3...
+       Nhật Bản
+         post1
+         post2
+         post3...
+  ├  Cuộc sống
+         Mua nhà
+           post1
+           post2
+           post3...
+         Năng lượng mặt trời
+           post1
+           post2
+           post3...
+         Thủ tục sinh con
+           post1
+           post2
+           post3...
+         Các trợ cấp
+           post1
+           post2
+           post3...
+         ...
+       
+  └  Liên Hệ
