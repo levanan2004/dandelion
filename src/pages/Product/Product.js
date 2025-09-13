@@ -72,9 +72,9 @@ export default function Product() {
           apiGetTokenClient.get(`${API}/detail-category`),
           apiGetTokenClient.get(`${API}/product`),
         ]);
-        setCats(getData(rc));
-        setDetails(getData(rd));
-        setProducts(getData(rp));
+        setCats(getData(rc).sort((a, b) => Number(a.id) - Number(b.id)));
+        setDetails(getData(rd).sort((a, b) => Number(a.id) - Number(b.id)));
+        setProducts(getData(rp).sort((a, b) => Number(a.id) - Number(b.id)));
       } catch (e) {
         console.error(e);
         setErr(
