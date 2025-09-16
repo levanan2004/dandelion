@@ -51,14 +51,19 @@ app.use("/Uploads", express.static(UPLOADS_DIR)); // /Uploads/**
 require("./Router/Account")(app);
 require("./Router/Category")(app);
 require("./Router/DetailCategory")(app);
+
 require("./Router/Product")(app);
 require("./Router/ProductImage")(app);
+
 require("./Router/Life")(app);
 require("./Router/LifeContent")(app);
 require("./Router/LifeImage")(app);
+require("./Router/LifeTitle")(app);
+
 require("./Router/Travel")(app);
 require("./Router/TravelContent")(app);
 require("./Router/TravelImage")(app);
+require("./Router/TravelTitle")(app);
 
 /* Upload endpoints theo bucket */
 // product

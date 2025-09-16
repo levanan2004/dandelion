@@ -26,7 +26,7 @@
   border-radius:14px;
   box-shadow: 0 2px 14px rgba(0,0,0,.04);
 }
-.card-body{ padding:16px; }
+.card-body{ padding:16px; margin: 16px; text-justify: inter-word; line-height: 1.85;}
 
 /* Header */
 .ld-header{ margin-bottom: 16px; }
@@ -53,19 +53,25 @@
   font-size:16px;
   line-height:1.7;
 }
-.pre-wrap{ white-space: pre-wrap; }
 
 /* Image block (centered + responsive like td- styles) */
-.ld-image{ display:block; }
+.ld-image { display: block; }
+.ld-image .ld-imgbox{
+  width: 60%;              /* đúng yêu cầu 60% */
+  aspect-ratio: 16 / 9;    /* KHUNG CỐ ĐỊNH 16:9 */
+  overflow: hidden;        /* cắt phần dư */
+  border-radius: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ảnh sẽ lấp đầy khung và tự bị cắt nếu là TikTok (9:16) */
 .ld-image .ld-img{
-  width:40%;
-  max-width: 640px;
-  height:auto;
-  display:block;
-  border-radius:10px;
-  margin-left:auto;     /* center horizontally */
-  margin-right:auto;    /* center horizontally */
-  object-fit:cover;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;        /* auto crop về 16:9 */
+  object-position: center;  /* vùng trọng tâm, có thể đổi 'top'/'bottom' */
 }
 .ld-caption{
   font-size:13px;

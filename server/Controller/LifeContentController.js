@@ -1,5 +1,5 @@
-const Life = require("../Model/LifeContentModel");
-const model = new Life();
+const LifeController = require("../Model/LifeContentModel");
+const model = new LifeController();
 
 exports.getList = function (req, res) {
   model.getAll(function (err, data) {

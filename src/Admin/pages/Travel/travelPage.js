@@ -16,11 +16,61 @@ const getData = (res) => res?.data?.result ?? res?.data ?? [];
 const toDisplayUrl = (url) =>
   !url ? "" : /^https?:|^data:/.test(url) ? url : `${API}${url}`;
 
+/** Endpoints travel_title (fallback gạch ngang ↔ gạch dưới) */
+const TRAVEL_TITLE_ENDPOINTS = [`${API}/travel-title`, `${API}/travel_title`];
+
+// Helpers gọi API travel_title với fallback
+async function getTravelTitles() {
+  let lastErr;
+  for (const url of TRAVEL_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.get(url);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+async function postTravelTitle(payload) {
+  let lastErr;
+  for (const url of TRAVEL_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.post(url, payload);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+async function putTravelTitle(payload) {
+  let lastErr;
+  for (const url of TRAVEL_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.put(url, payload);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+async function deleteTravelTitle(payload) {
+  let lastErr;
+  for (const url of TRAVEL_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.delete(url, { data: payload });
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+
 export default function TravelPage() {
   // ======= SOURCE DATA =======
   const [travels, setTravels] = useState([]);
   const [contents, setContents] = useState([]);
   const [images, setImages] = useState([]);
+  const [titles, setTitles] = useState([]); // NEW: travel_title
 
   // ======= SELECTED =======
   const [selectedTravel, setSelectedTravel] = useState("");
@@ -35,6 +85,10 @@ export default function TravelPage() {
     position: "",
   });
   const [editingContentId, setEditingContentId] = useState("");
+
+  // ======= FORMS: TITLES ======= (NEW)
+  const [titleForm, setTitleForm] = useState({ title: "", position: "" });
+  const [editingTitleId, setEditingTitleId] = useState("");
 
   // ======= FORMS: IMAGES =======
   const [imgFiles, setImgFiles] = useState([]); // Array<File> (cộng dồn qua nhiều lần chọn)
@@ -70,12 +124,21 @@ export default function TravelPage() {
     const res = await apiGetTokenClient.get(`${API}/travel-image`);
     setImages(getData(res));
   };
+  const loadTitles = async () => {
+    const res = await getTravelTitles();
+    setTitles(getData(res));
+  };
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        await Promise.all([loadTravels(), loadContents(), loadImages()]);
+        await Promise.all([
+          loadTravels(),
+          loadContents(),
+          loadImages(),
+          loadTitles(),
+        ]);
       } catch (e) {
         console.error(e);
         setErr(
@@ -104,6 +167,14 @@ export default function TravelPage() {
         .filter((im) => im.travel_id === selectedTravel)
         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
     [images, selectedTravel]
+  );
+
+  const titlesOfSelected = useMemo(
+    () =>
+      titles
+        .filter((t) => t.travel_id === selectedTravel)
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
+    [titles, selectedTravel]
   );
 
   // ======= TRAVEL CRUD =======
@@ -140,13 +211,22 @@ export default function TravelPage() {
   };
 
   const deleteTravel = async (id) => {
-    if (!window.confirm("Xoá bài Travel này? (nội dung & ảnh sẽ bị xoá theo)"))
+    if (
+      !window.confirm(
+        "Xoá bài Travel này? (nội dung, tiêu đề & ảnh sẽ bị xoá theo)"
+      )
+    )
       return;
     setLoading(true);
     try {
       await apiGetTokenClient.delete(`${API}/travel`, { data: { id } });
       if (selectedTravel === id) setSelectedTravel("");
-      await Promise.all([loadTravels(), loadContents(), loadImages()]);
+      await Promise.all([
+        loadTravels(),
+        loadContents(),
+        loadImages(),
+        loadTitles(),
+      ]);
     } catch (e) {
       console.error(e);
       setErr(e?.response?.data?.message || "Không xoá được bài Travel.");
@@ -208,8 +288,60 @@ export default function TravelPage() {
     }
   };
 
-  // ======= IMAGE CRUD =======
+  // ======= TITLE CRUD (NEW) =======
+  const resetTitleForm = () => {
+    setEditingTitleId("");
+    setTitleForm({ title: "", position: "" });
+  };
 
+  const addOrUpdateTitle = async () => {
+    if (!selectedTravel) return alert("Chọn bài Travel trước.");
+    const title = (titleForm.title || "").trim();
+    if (!title) return alert("Nhập tiêu đề.");
+    const position = Number(titleForm.position ?? 0) || 0;
+
+    setLoading(true);
+    setErr("");
+    try {
+      if (editingTitleId) {
+        await putTravelTitle({
+          id: editingTitleId,
+          travel_id: selectedTravel,
+          title,
+          position,
+        });
+      } else {
+        await postTravelTitle({
+          travel_id: selectedTravel,
+          title,
+          position,
+        });
+      }
+      await loadTitles();
+      resetTitleForm();
+    } catch (e) {
+      console.error(e);
+      setErr(e?.response?.data?.message || "Không lưu được tiêu đề.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onDeleteTitle = async (id) => {
+    if (!window.confirm("Xoá tiêu đề này?")) return;
+    setLoading(true);
+    try {
+      await deleteTravelTitle({ id });
+      await loadTitles();
+    } catch (e) {
+      console.error(e);
+      setErr(e?.response?.data?.message || "Không xoá được tiêu đề.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ======= IMAGE CRUD =======
   const addImages = async () => {
     if (!selectedTravel) return alert("Chọn bài Travel trước.");
     if (!imgFiles?.length) return alert("Chọn ít nhất một file ảnh để upload.");
@@ -415,15 +547,133 @@ export default function TravelPage() {
 
                 {!selectedTravel && (
                   <div className="small ad-text-muted ad-mt-2">
-                    Chọn một bài Travel trong bảng để quản lý nội dung & ảnh.
+                    Chọn một bài Travel trong bảng để quản lý nội dung, tiêu đề
+                    & ảnh.
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* ===== RIGHT: Nội dung & Ảnh ===== */}
+          {/* ===== RIGHT: Tiêu đề / Nội dung / Ảnh ===== */}
           <div className="ad-d-flex ad-flex-column ad-gap-12">
+            {/* TITLE CARD (NEW) */}
+            <div className="card">
+              <div className="card-header">Tiêu đề (travel_title)</div>
+              <div className="card-body">
+                <div className="row g-2 ad-mb-3">
+                  <div className="col-12">
+                    <input
+                      className="form-control"
+                      placeholder={
+                        selectedTravel
+                          ? "Nhập tiêu đề hiển thị trong bài…"
+                          : "Hãy chọn 1 bài Travel trước."
+                      }
+                      value={titleForm.title}
+                      onChange={(e) =>
+                        setTitleForm((p) => ({ ...p, title: e.target.value }))
+                      }
+                      disabled={!selectedTravel}
+                    />
+                  </div>
+                  <div className="col-6 col-lg-3">
+                    <input
+                      className="form-control"
+                      type="number"
+                      placeholder="Vị trí"
+                      value={titleForm.position}
+                      onChange={(e) =>
+                        setTitleForm((p) => ({
+                          ...p,
+                          position: e.target.value,
+                        }))
+                      }
+                      disabled={!selectedTravel}
+                    />
+                  </div>
+                  <div className="col-6 col-lg-9 ad-d-flex ad-gap-2">
+                    <button
+                      className="btn btn-primary"
+                      onClick={addOrUpdateTitle}
+                      disabled={!selectedTravel}
+                    >
+                      {editingTitleId ? "Cập nhật" : "+ Thêm tiêu đề"}
+                    </button>
+                    {editingTitleId && (
+                      <button
+                        className="btn btn-light"
+                        onClick={resetTitleForm}
+                      >
+                        Huỷ
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="table-responsive">
+                  <table className="table table-sm align-middle">
+                    <thead>
+                      <tr>
+                        <th style={{ width: 56 }}>#</th>
+                        <th style={{ width: 88 }}>Vị trí</th>
+                        <th>Tiêu đề</th>
+                        <th className="text-end" style={{ width: 160 }}>
+                          Thao tác
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedTravel && titlesOfSelected.length === 0 && (
+                        <tr>
+                          <td colSpan="4" className="ad-text-muted">
+                            Chưa có tiêu đề.
+                          </td>
+                        </tr>
+                      )}
+                      {!selectedTravel && (
+                        <tr>
+                          <td colSpan="4" className="ad-text-muted">
+                            Chọn một bài Travel để quản lý tiêu đề.
+                          </td>
+                        </tr>
+                      )}
+                      {titlesOfSelected.map((t, idx) => (
+                        <tr key={t.id}>
+                          <td>{idx + 1}</td>
+                          <td>{t.position ?? 0}</td>
+                          <td className="text-break">{t.title}</td>
+                          <td className="text-end">
+                            <div className="ad-pm-actions">
+                              <button
+                                className="btn btn-warning btn-xs"
+                                onClick={() => {
+                                  setEditingTitleId(t.id);
+                                  setTitleForm({
+                                    title: t.title || "",
+                                    position: t.position ?? 0,
+                                  });
+                                }}
+                              >
+                                Sửa
+                              </button>
+                              <button
+                                className="btn btn-danger btn-xs"
+                                onClick={() => onDeleteTitle(t.id)}
+                              >
+                                Xoá
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            {/* END TITLE CARD */}
+
             {/* CONTENT CARD */}
             <div className="card" ref={contentCardRef}>
               <div className="card-header">Nội dung</div>

@@ -16,11 +16,61 @@ const getData = (res) => res?.data?.result ?? res?.data ?? [];
 const toDisplayUrl = (url) =>
   !url ? "" : /^https?:|^data:/.test(url) ? url : `${API}${url}`;
 
+/** Endpoints life_title (fallback gạch ngang ↔ gạch dưới) */
+const LIFE_TITLE_ENDPOINTS = [`${API}/life-title`, `${API}/life_title`];
+
+// Helpers gọi API life_title với fallback
+async function getLifeTitles() {
+  let lastErr;
+  for (const url of LIFE_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.get(url);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+async function postLifeTitle(payload) {
+  let lastErr;
+  for (const url of LIFE_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.post(url, payload);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+async function putLifeTitle(payload) {
+  let lastErr;
+  for (const url of LIFE_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.put(url, payload);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+async function deleteLifeTitle(payload) {
+  let lastErr;
+  for (const url of LIFE_TITLE_ENDPOINTS) {
+    try {
+      return await apiGetTokenClient.delete(url, { data: payload });
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+
 export default function LifePage() {
   // ======= SOURCE DATA =======
   const [lifes, setLifes] = useState([]);
   const [contents, setContents] = useState([]);
   const [images, setImages] = useState([]);
+  const [titles, setTitles] = useState([]); // NEW: life_title
 
   // ======= SELECTED =======
   const [selectedLife, setSelectedLife] = useState("");
@@ -32,6 +82,10 @@ export default function LifePage() {
   // ======= FORMS: CONTENT =======
   const [contentForm, setContentForm] = useState({ content: "", position: "" });
   const [editingContentId, setEditingContentId] = useState("");
+
+  // ======= FORMS: TITLES =======  (NEW)
+  const [titleForm, setTitleForm] = useState({ title: "", position: "" });
+  const [editingTitleId, setEditingTitleId] = useState("");
 
   // ======= FORMS: IMAGES =======
   const [imgFiles, setImgFiles] = useState([]); // Array<File> (cộng dồn)
@@ -65,12 +119,21 @@ export default function LifePage() {
     const res = await apiGetTokenClient.get(`${API}/life-image`);
     setImages(getData(res));
   };
+  const loadTitles = async () => {
+    const res = await getLifeTitles();
+    setTitles(getData(res));
+  };
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        await Promise.all([loadLifes(), loadContents(), loadImages()]);
+        await Promise.all([
+          loadLifes(),
+          loadContents(),
+          loadImages(),
+          loadTitles(),
+        ]);
       } catch (e) {
         console.error(e);
         setErr(
@@ -99,6 +162,14 @@ export default function LifePage() {
         .filter((im) => im.life_id === selectedLife)
         .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
     [images, selectedLife]
+  );
+
+  const titlesOfSelected = useMemo(
+    () =>
+      titles
+        .filter((t) => t.life_id === selectedLife)
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
+    [titles, selectedLife]
   );
 
   // ======= LIFE CRUD =======
@@ -135,13 +206,22 @@ export default function LifePage() {
   };
 
   const deleteLife = async (id) => {
-    if (!window.confirm("Xoá bài Life này? (nội dung & ảnh sẽ bị xoá theo)"))
+    if (
+      !window.confirm(
+        "Xoá bài Life này? (nội dung, tiêu đề & ảnh sẽ bị xoá theo)"
+      )
+    )
       return;
     setLoading(true);
     try {
       await apiGetTokenClient.delete(`${API}/life`, { data: { id } });
       if (selectedLife === id) setSelectedLife("");
-      await Promise.all([loadLifes(), loadContents(), loadImages()]);
+      await Promise.all([
+        loadLifes(),
+        loadContents(),
+        loadImages(),
+        loadTitles(),
+      ]);
     } catch (e) {
       console.error(e);
       setErr(e?.response?.data?.message || "Không xoá được bài Life.");
@@ -203,8 +283,60 @@ export default function LifePage() {
     }
   };
 
-  // ======= IMAGE CRUD =======
+  // ======= TITLE CRUD (NEW) =======
+  const resetTitleForm = () => {
+    setEditingTitleId("");
+    setTitleForm({ title: "", position: "" });
+  };
 
+  const addOrUpdateTitle = async () => {
+    if (!selectedLife) return alert("Chọn bài Life trước.");
+    const title = (titleForm.title || "").trim();
+    if (!title) return alert("Nhập tiêu đề.");
+    const position = Number(titleForm.position ?? 0) || 0;
+
+    setLoading(true);
+    setErr("");
+    try {
+      if (editingTitleId) {
+        await putLifeTitle({
+          id: editingTitleId,
+          life_id: selectedLife,
+          title,
+          position,
+        });
+      } else {
+        await postLifeTitle({
+          life_id: selectedLife,
+          title,
+          position,
+        });
+      }
+      await loadTitles();
+      resetTitleForm();
+    } catch (e) {
+      console.error(e);
+      setErr(e?.response?.data?.message || "Không lưu được tiêu đề.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onDeleteTitle = async (id) => {
+    if (!window.confirm("Xoá tiêu đề này?")) return;
+    setLoading(true);
+    try {
+      await deleteLifeTitle({ id });
+      await loadTitles();
+    } catch (e) {
+      console.error(e);
+      setErr(e?.response?.data?.message || "Không xoá được tiêu đề.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ======= IMAGE CRUD =======
   const addImages = async () => {
     if (!selectedLife) return alert("Chọn bài Life trước.");
     if (!imgFiles?.length) return alert("Chọn ít nhất một file ảnh để upload.");
@@ -233,7 +365,7 @@ export default function LifePage() {
 
       await loadImages();
       setImgStartPos(pos); // tiếp tục vị trí sau lần thêm
-      setImgFiles([]); // clear pending, giữ alt nếu muốn thêm tiếp
+      setImgFiles([]); // clear pending
     } catch (e) {
       console.error(e);
       setErr(e?.response?.data?.message || "Không thêm được ảnh.");
@@ -368,7 +500,9 @@ export default function LifePage() {
                               {l.created_at
                                 ? new Date(l.created_at).toLocaleString(
                                     "vi-VN",
-                                    { hour12: false }
+                                    {
+                                      hour12: false,
+                                    }
                                   )
                                 : "—"}
                             </td>
@@ -405,18 +539,135 @@ export default function LifePage() {
                   </table>
                 </div>
 
-                {/* Gợi ý chọn để quản lý nội dung/ảnh */}
                 {!selectedLife && (
                   <div className="small ad-text-muted ad-mt-1">
-                    Chọn một bài Life trong bảng để quản lý nội dung & ảnh.
+                    Chọn một bài Life trong bảng để quản lý nội dung, tiêu đề &
+                    ảnh.
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* ===== RIGHT: Nội dung & Ảnh ===== */}
+          {/* ===== RIGHT: Title / Content / Image ===== */}
           <div className="ad-d-flex ad-flex-column ad-gap-12">
+            {/* TITLE CARD (NEW) */}
+            <div className="card">
+              <div className="card-header">Tiêu đề (life_title)</div>
+              <div className="card-body">
+                <div className="row g-2 ad-mb-3">
+                  <div className="col-12">
+                    <input
+                      className="form-control"
+                      placeholder={
+                        selectedLife
+                          ? "Nhập tiêu đề hiển thị trong bài…"
+                          : "Hãy chọn 1 bài Life trước."
+                      }
+                      value={titleForm.title}
+                      onChange={(e) =>
+                        setTitleForm((p) => ({ ...p, title: e.target.value }))
+                      }
+                      disabled={!selectedLife}
+                    />
+                  </div>
+                  <div className="col-6 col-lg-3">
+                    <input
+                      className="form-control"
+                      type="number"
+                      placeholder="Vị trí"
+                      value={titleForm.position}
+                      onChange={(e) =>
+                        setTitleForm((p) => ({
+                          ...p,
+                          position: e.target.value,
+                        }))
+                      }
+                      disabled={!selectedLife}
+                    />
+                  </div>
+                  <div className="col-6 col-lg-9 ad-d-flex ad-gap-2">
+                    <button
+                      className="btn btn-primary"
+                      onClick={addOrUpdateTitle}
+                      disabled={!selectedLife}
+                    >
+                      {editingTitleId ? "Cập nhật" : "+ Thêm tiêu đề"}
+                    </button>
+                    {editingTitleId && (
+                      <button
+                        className="btn btn-light"
+                        onClick={resetTitleForm}
+                      >
+                        Huỷ
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="table-responsive">
+                  <table className="table table-sm align-middle">
+                    <thead>
+                      <tr>
+                        <th style={{ width: 56 }}>#</th>
+                        <th style={{ width: 88 }}>Vị trí</th>
+                        <th>Tiêu đề</th>
+                        <th className="text-end" style={{ width: 160 }}>
+                          Thao tác
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedLife && titlesOfSelected.length === 0 && (
+                        <tr>
+                          <td colSpan="4" className="ad-text-muted">
+                            Chưa có tiêu đề.
+                          </td>
+                        </tr>
+                      )}
+                      {!selectedLife && (
+                        <tr>
+                          <td colSpan="4" className="ad-text-muted">
+                            Chọn một bài Life để quản lý tiêu đề.
+                          </td>
+                        </tr>
+                      )}
+                      {titlesOfSelected.map((t, idx) => (
+                        <tr key={t.id}>
+                          <td>{idx + 1}</td>
+                          <td>{t.position ?? 0}</td>
+                          <td className="text-break">{t.title}</td>
+                          <td className="text-end">
+                            <div className="ad-pm-actions">
+                              <button
+                                className="btn btn-warning btn-xs"
+                                onClick={() => {
+                                  setEditingTitleId(t.id);
+                                  setTitleForm({
+                                    title: t.title || "",
+                                    position: t.position ?? 0,
+                                  });
+                                }}
+                              >
+                                Sửa
+                              </button>
+                              <button
+                                className="btn btn-danger btn-xs"
+                                onClick={() => onDeleteTitle(t.id)}
+                              >
+                                Xoá
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            {/* END TITLE CARD */}
+
             {/* CONTENT CARD */}
             <div className="card" ref={contentCardRef}>
               <div className="card-header">Nội dung</div>

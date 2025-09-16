@@ -27,6 +27,7 @@ export default function LifeDetail() {
   const [life, setLife] = useState(null);
   const [images, setImages] = useState([]);
   const [contents, setContents] = useState([]);
+  const [titles, setTitles] = useState([]); // NEW: life_title
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -57,6 +58,26 @@ export default function LifeDetail() {
 
         setImages(ims);
         setContents(cons);
+
+        // NEW: lấy life_title (tương thích 2 route)
+        try {
+          const rlt =
+            (await apiGetTokenClient
+              .get(`${API}/life-title`)
+              .catch(() => null)) ||
+            (await apiGetTokenClient
+              .get(`${API}/life_title`)
+              .catch(() => null));
+          const allTitles = getData(rlt) || [];
+          const tts = allTitles.filter(
+            (t) => String(t.life_id ?? t.lifeId) === lid
+          );
+          tts.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+          setTitles(tts);
+        } catch (e2) {
+          console.warn("Không lấy được life_title:", e2);
+          setTitles([]);
+        }
       } catch (e) {
         console.error(e);
         setErr(
@@ -68,32 +89,21 @@ export default function LifeDetail() {
     })();
   }, [lid]);
 
-  // Ghép theo thứ tự position, đan xen text/img
+  // Ghép theo position: title / image / content (title ưu tiên nếu bằng vị trí)
   const timeline = useMemo(() => {
     const ims = images.map((i) => ({ _type: "img", ...i }));
     const cons = contents.map((c) => ({ _type: "txt", ...c }));
+    const tits = titles.map((t) => ({ _type: "ttl", ...t }));
 
-    let i = 0,
-      j = 0;
-    const out = [];
-    while (i < cons.length || j < ims.length) {
-      const pc = cons[i]?.position ?? Infinity;
-      const pi = ims[j]?.position ?? Infinity;
-
-      if (pc <= pi) {
-        out.push(cons[i]);
-        i++;
-        if (pc === pi && j < ims.length) {
-          out.push(ims[j]);
-          j++;
-        }
-      } else {
-        out.push(ims[j]);
-        j++;
-      }
-    }
-    return out;
-  }, [images, contents]);
+    const all = [...tits, ...ims, ...cons];
+    const rank = (t) => (t === "ttl" ? 0 : t === "img" ? 1 : 2);
+    all.sort((a, b) => {
+      const pa = a.position ?? 0;
+      const pb = b.position ?? 0;
+      return pa === pb ? rank(a._type) - rank(b._type) : pa - pb;
+    });
+    return all;
+  }, [images, contents, titles]);
 
   if (loading) return <div className="ld-container">Đang tải bài viết…</div>;
   if (err) return <div className="ld-container text-danger">{err}</div>;
@@ -130,34 +140,63 @@ export default function LifeDetail() {
           </div>
         )}
 
-        {timeline.map((item, idx) =>
-          item._type === "txt" ? (
-            <section key={`c-${idx}`} className="ld-block ld-content card">
-              {item.title && <h3 className="ld-block-title">{item.title}</h3>}
-              <div className="card-body">
-                <div className="ld-content-body pre-wrap">
-                  {item.content || ""}
+        {timeline.map((item, idx) => {
+          if (item._type === "ttl") {
+            // KHỐI TIÊU ĐỀ RIÊNG (không dính liền ảnh)
+            return (
+              <section key={`t-${idx}`} className="ld-block card">
+                <div
+                  className="card-body"
+                  style={{ width: "60%", margin: "0 auto" }}
+                >
+                  <h3
+                    className="ld-block-title text-center"
+                    style={{
+                      margin: 0,
+                      fontWeight: 800,
+                      fontSize: "20px",
+                      color: "#111827",
+                    }}
+                  >
+                    {item.title}
+                  </h3>
                 </div>
-              </div>
-            </section>
-          ) : (
+              </section>
+            );
+          }
+
+          if (item._type === "txt") {
+            return (
+              <section key={`c-${idx}`} className="ld-block ld-content card">
+                {item.title && <h3 className="ld-block-title">{item.title}</h3>}
+                <div className="card-body">
+                  <div className="ld-content-body">{item.content || ""}</div>
+                </div>
+              </section>
+            );
+          }
+
+          // _type === "img"
+          return (
             <figure key={`i-${idx}`} className="ld-block ld-image card">
               <div className="card-body">
-                <img
-                  className="ld-img"
-                  src={toDisplayUrl(item.imageUrl)}
-                  alt={item.alt || life.title}
-                  loading="lazy"
-                />
-                {(item.caption || item.alt) && (
-                  <figcaption className="ld-caption">
-                    {item.caption || item.alt}
-                  </figcaption>
-                )}
+                <div className="ld-imgbox">
+                  <img
+                    className="ld-img"
+                    src={toDisplayUrl(item.imageUrl)}
+                    alt={item.alt || life.title}
+                    loading="lazy"
+                  />
+                  {(item.caption || item.alt) && (
+                    <figcaption className="ld-caption">
+                      {item.caption || item.alt}
+                    </figcaption>
+                  )}
+                </div>
               </div>
             </figure>
-          )
-        )}
+          );
+        })}
       </article>
 
       {/* Ghi chú/nguồn (tuỳ chọn) */}

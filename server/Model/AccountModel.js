@@ -13,14 +13,22 @@ module.exports = class UserModel {
     return rows; // mảng rỗng nếu chưa có
   }
 
+  async checkPhoneExists(phone) {
+    const [rows] = await pool.query(
+      "SELECT id FROM account WHERE phone = ? LIMIT 1",
+      [phone]
+    );
+    return rows; // mảng rỗng nếu chưa có
+  }
+
   // Đăng ký user local
-  async registerUser({ username, email, password }) {
+  async registerUser({ username, email, phone, password }) {
     await pool.query(
       `INSERT INTO account
-         (username, email, password, createdAt, role, provider, email_verified, last_login)
+         (username, email, phone, password, createdAt, role, provider, email_verified, last_login)
        VALUES
-         (?, ?, ?, NOW(), 0, 'local', 0, NOW())`,
-      [username, email, password]
+         (?, ?, ?, ?, NOW(), 0, 'local', 0, NOW())`,
+      [username, email, phone, password]
     );
   }
 

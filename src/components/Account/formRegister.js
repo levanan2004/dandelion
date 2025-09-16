@@ -25,6 +25,18 @@ const FormRegister = ({ handleSubmit, handleChange, loading }) => {
         </div>
         <div className="form-group">
           <input
+            type="tel"
+            className="form-control"
+            name="phone"
+            inputMode="numeric"
+            pattern="^0\d{9}$"
+            placeholder="Số điện thoại"
+            required
+            onChange={handleChange}
+          />
+        </div>
+        <div className="form-group">
+          <input
             type="email"
             className="form-control"
             name="email"

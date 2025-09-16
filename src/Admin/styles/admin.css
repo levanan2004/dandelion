@@ -140,13 +140,14 @@
 .admin-ui .table{
   border-collapse: separate !important;
   border-spacing: 0 8px !important;
+  width: 100%;
 }
 .admin-ui .table thead th{
   border: 0 !important;
   color: #566072;
   font-weight: 800;
   background: transparent;
-}
+} 
 .admin-ui .table tbody tr{
   background: #fff;
   border: 1px solid var(--pm-border);

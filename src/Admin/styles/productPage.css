@@ -398,7 +398,7 @@ textarea.form-control{ height: auto; min-height: 92px; }
 }
 .life-title:hover{ text-decoration: underline; }
 .life-title--lg{ font-size: 22px; }
-.life-meta{ font-size:13px; color:#6b7280; margin-top:4px; }
+.life-meta{ font-size:13px; color:#6b7280; margin-top:8px; margin-bottom: 8px; }
 
 /* ===== Life: HOME (row, thumb nhỏ) ===== */
 .life-list{ display:flex; flex-direction:column; gap:14px; }
@@ -411,6 +411,8 @@ textarea.form-control{ height: auto; min-height: 92px; }
 }
 .life-thumb img.life-img{
   width:100%; height:100%; object-fit:cover; border-radius:12px; border:1px solid #eef1f5;
+  aspect-ratio: 16 / 9;    /* KHUNG CỐ ĐỊNH 16:9 */
+  overflow: hidden;
 }
 .life-img--sm{ height:100px; }
 .life-excerpt{ color:#374151; }

@@ -11,8 +11,8 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // ========== REGISTER (local) ==========
 const postRegister = async (req, res) => {
   try {
-    const { username, email, password } = req.body || {};
-    if (!username || !email || !password) {
+    const { username, email, phone, password } = req.body || {};
+    if (!username || !email || !phone || !password) {
       return res.status(400).send("Thiếu dữ liệu.");
     }
 
@@ -21,8 +21,13 @@ const postRegister = async (req, res) => {
       return res.status(400).send("Email đã tồn tại.");
     }
 
+    const phoneExists = await userModel.checkPhoneExists(phone);
+    if (phoneExists.length > 0) {
+      return res.status(400).send("Số điện thoại đã tồn tại.");
+    }
+
     const hashed = await bcrypt.hash(String(password), 10);
-    await userModel.registerUser({ username, email, password: hashed });
+    await userModel.registerUser({ username, email, phone, password: hashed });
 
     return res.status(200).send("Đăng ký thành công!");
   } catch (err) {
@@ -113,6 +118,7 @@ const googleLogin = async (req, res) => {
 
     const googleId = payload.sub;
     const email = payload.email;
+    const phone = payload.phone_number;
     const emailVerified = !!payload.email_verified;
     const name = payload.name || email?.split("@")[0] || "user";
     const picture = payload.picture;
@@ -139,6 +145,7 @@ const googleLogin = async (req, res) => {
       user = await userModel.createGoogleUser({
         email,
         username,
+        phone,
         googleId,
         emailVerified,
         avatarUrl: picture,
@@ -155,6 +162,7 @@ const googleLogin = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        phone: user.phone,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRE || "7d" }
@@ -168,6 +176,7 @@ const googleLogin = async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         provider: "google",
       },
