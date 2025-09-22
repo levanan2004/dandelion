@@ -26,6 +26,16 @@ const fmtDate = (d) =>
       })
     : "—";
 
+// ✅ slugify giống Product.js
+const slugify = (s = "") =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+
 export default function TravelHomeSection({
   title = "Trải nghiệm du lịch tại Nhật Bản",
   moreHref = "/travels",
@@ -129,8 +139,11 @@ export default function TravelHomeSection({
           220
         );
 
+        // ✅ id theo slug để anchor nhảy đúng (#travel-<slug>)
+        const anchorId = "travel-" + slugify(t.title || String(t.id || ""));
+
         return (
-          <div key={t.id} className="travel-post">
+          <div id={anchorId} key={t.id} className="travel-post">
             <Link to={`/travel/${t.id}`} className="travel-title">
               {t.title}
             </Link>

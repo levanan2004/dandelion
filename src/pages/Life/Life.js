@@ -1,11 +1,19 @@
 // src/pages/Life/Life.js
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import apiGetTokenClient from "../../middleWare/getTokenClient";
 import LifeHomeSection from "../../components/LifeHomeSection";
 
 const API = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
 const getData = (res) => res?.data?.result ?? res?.data ?? [];
+
+const slugify = (s = "") =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
 
 export default function Life() {
   const [lifes, setLifes] = useState([]);
@@ -41,7 +49,7 @@ export default function Life() {
               <ul className="life-catalog">
                 {lifes.map((l) => (
                   <li key={l.id}>
-                    <Link to={`/life/${l.id}`}>{l.title}</Link>
+                    <a href={`#life-${slugify(l.title)}`}>{l.title}</a>
                   </li>
                 ))}
               </ul>

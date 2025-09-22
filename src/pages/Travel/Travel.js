@@ -1,11 +1,21 @@
 // src/pages/Travel/Travel.js
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"; // vẫn giữ vì còn dùng ở phần "Đọc thêm →"
 import apiGetTokenClient from "../../middleWare/getTokenClient";
 import TravelHomeSection from "../../components/TravelHomeSection";
 
 const API = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
 const getData = (res) => res?.data?.result ?? res?.data ?? [];
+
+// ✅ thêm slugify giống bên Product.js
+const slugify = (s = "") =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
 
 export default function Travel() {
   const [travels, setTravels] = useState([]);
@@ -43,7 +53,8 @@ export default function Travel() {
               <ul className="travel-catalog">
                 {travels.map((t) => (
                   <li key={t.id}>
-                    <Link to={`/travel/${t.id}`}>{t.title}</Link>
+                    {/* ✅ đổi Link -> a với anchor theo slug tiêu đề */}
+                    <a href={`#travel-${slugify(t.title)}`}>{t.title}</a>
                   </li>
                 ))}
               </ul>
@@ -55,13 +66,16 @@ export default function Travel() {
             <section className="pf-section travel-section">
               <div className="pf-head">
                 <h2>Trải nghiệm du lịch tại Nhật Bản</h2>
-                <Link className="pf-more" to="/travel">
+                {/* <Link className="pf-more" to="/travel">
                   Đọc thêm →
-                </Link>
+                </Link> */}
               </div>
 
               {/* Danh sách bài viết */}
               <TravelHomeSection title="" moreHref="/travel" limit={20} />
+              {/* ⚠️ Trong TravelHomeSection, nhớ gán id cho mỗi bài:
+                  <article id={`travel-${slugify(item.title)}`}>...</article>
+              */}
             </section>
           </div>
         </div>

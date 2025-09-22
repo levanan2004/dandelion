@@ -1205,6 +1205,7 @@ img {
     color: #333;
     font-size: 18px;
     line-height: 3.0rem;
+    padding: 10px 30px;
 }
 
 .product-main .main-content {
@@ -1257,7 +1258,7 @@ img {
     font-size: 1.4rem;
 }
 
-.product-main .product-catalog li:hover {
+.product-main .product-catalog li a:hover {
     display: block;
     background-color: #4CAF50;
     color: #fff;
@@ -1469,9 +1470,10 @@ img {
     color: #333;
     font-size: 18px;
     line-height: 3.0rem;
+    padding: 10px 30px;
 }
 
-.travel-catalog li:hover {
+.travel-catalog li a:hover {
     display: block;
     background-color: #4CAF50;
     color: #fff;
@@ -1548,10 +1550,10 @@ img {
     color: #333;
     font-size: 18px;
     line-height: 3.0rem;
-    padding: 2px;
+    padding: 10px 30px;
 }
 
-.life-catalog li:hover {
+.life-catalog li a:hover {
     display: block;
     background-color: #4CAF50;
     color: #fff;

@@ -421,7 +421,7 @@ export default function ProductPage() {
           <div>
             <div className="ad-pm-title">Quản lý sản phẩm</div>
             <div className="ad-pm-subtle">
-              API base: <code>{API}</code>
+              {/* API base: <code>{API}</code> */}
             </div>
           </div>
         </div>

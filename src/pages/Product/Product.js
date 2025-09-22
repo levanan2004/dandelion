@@ -34,6 +34,10 @@ const normalize = (s = "") =>
 
 const eq = (a, b) => String(a) === String(b);
 
+// ===== helpers cho anchor =====
+const catIdFromName = (name = "") => `cat-${slugify(name)}`;
+const catHrefFromName = (name = "") => `/products#${catIdFromName(name)}`;
+
 export default function Product() {
   // ===== data =====
   const [cats, setCats] = useState([]);
@@ -63,6 +67,7 @@ export default function Product() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
+    let canceled = false;
     (async () => {
       setLoading(true);
       setErr("");
@@ -72,18 +77,23 @@ export default function Product() {
           apiGetTokenClient.get(`${API}/detail-category`),
           apiGetTokenClient.get(`${API}/product`),
         ]);
+        if (canceled) return;
         setCats(getData(rc).sort((a, b) => Number(a.id) - Number(b.id)));
         setDetails(getData(rd).sort((a, b) => Number(a.id) - Number(b.id)));
         setProducts(getData(rp).sort((a, b) => Number(a.id) - Number(b.id)));
       } catch (e) {
+        if (canceled) return;
         console.error(e);
         setErr(
           e?.response?.data?.message || "Không tải được dữ liệu sản phẩm."
         );
       } finally {
-        setLoading(false);
+        if (!canceled) setLoading(false);
       }
     })();
+    return () => {
+      canceled = true;
+    };
   }, []);
 
   // ===== maps & helpers =====
@@ -162,12 +172,54 @@ export default function Product() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [catId]);
 
+  // ===== click mục lục: xử lý filtered vs grouped =====
+  const handleCatalogClick = (name) => (e) => {
+    const id = catIdFromName(name);
+    const href = `/products#${id}`;
+    const isFiltered = Boolean(qParam || catParam || detParam);
+    const onProducts = window.location.pathname === "/products";
+
+    // Nếu đang filtered -> xoá params, set hash, chờ effect cuộn sau khi grouped render
+    if (isFiltered) {
+      e.preventDefault();
+      setSearchParams({});
+      window.history.pushState(null, "", href);
+      return;
+    }
+
+    // Đã grouped
+    if (onProducts) {
+      e.preventDefault();
+      document.getElementById(id)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      window.history.replaceState(null, "", href);
+    }
+    // Nếu không ở /products thì để anchor mặc định điều hướng
+  };
+
+  // ===== sau khi chuyển từ filtered -> grouped hoặc mở trực tiếp /products#... =====
+  useEffect(() => {
+    if (loading || err) return;
+    const isFiltered = Boolean(qParam || catParam || detParam);
+    if (isFiltered) return;
+
+    const hash = window.location.hash;
+    if (!hash) return;
+    const id = hash.slice(1);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [loading, err, qParam, catParam, detParam, cats, products]);
+
   // ===== render =====
   return (
     <>
       <main className="product-main">
         <div className="container">
-          {/* Sidebar mục lục category (giữ như cũ) */}
+          {/* Sidebar mục lục category */}
           <aside className="sidebar">
             {loading ? (
               <div className="product-catalog">Đang tải mục lục…</div>
@@ -177,7 +229,12 @@ export default function Product() {
               <ul className="product-catalog">
                 {cats.map((c) => (
                   <li key={c.id}>
-                    <a href={`#cat-${slugify(c.name)}`}>{c.name}</a>
+                    <a
+                      href={catHrefFromName(c.name)} // /products#cat-<slug>
+                      onClick={handleCatalogClick(c.name)}
+                    >
+                      {c.name}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -297,11 +354,11 @@ export default function Product() {
                 </div>
               </section>
             ) : (
-              // Ngược lại: không có tham số lọc -> nhóm theo Category như trước
+              // Ngược lại: không có tham số lọc -> nhóm theo Category
               !loading &&
               !err &&
               cats.map((cat) => {
-                const sid = `cat-${slugify(cat.name)}`;
+                const sid = catIdFromName(cat.name);
                 const list = productsByCat.get(String(cat.id)) || [];
                 return (
                   <section id={sid} key={cat.id} style={{ marginTop: 30 }}>

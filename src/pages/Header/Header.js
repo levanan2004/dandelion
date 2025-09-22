@@ -59,6 +59,7 @@ export default function Header() {
     const q = keyword.trim();
     if (!q) navigate("/products");
     else navigate(`/products?q=${encodeURIComponent(q)}`);
+    setKeyword("");
   };
   const onSearchClear = () => setKeyword("");
 

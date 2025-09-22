@@ -17,12 +17,22 @@ const shortText = (s, len = 200) => {
   return t.length > len ? t.slice(0, len - 1) + "…" : t;
 };
 
+// slugify đồng bộ
+const slugify = (s = "") =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+
 export default function LifeHomeSection({
   title = "Chia sẻ kinh nghiệm sống tại Nhật Bản",
   readMoreLink = "/life",
   limit = 6,
   className = "",
-  // home = small cards (homepage), page = big cards (Life page)
+  // home = thẻ nhỏ (homepage), page = thẻ lớn (Life page)
   variant = "home",
 }) {
   const [lifes, setLifes] = useState([]);
@@ -67,7 +77,6 @@ export default function LifeHomeSection({
       byLifeIdContents.set(c.life_id, arr);
     });
 
-    // merge + sort + take thumb + excerpt
     const merged = lifes
       .map((l) => {
         const imgs = (byLifeIdImgs.get(l.id) || []).sort(
@@ -93,12 +102,9 @@ export default function LifeHomeSection({
 
   return (
     <section className={`life-section pf-section ${className}`}>
-      {/* Section header */}
       <div className="pf-head">
         <h2 className="title">{title}</h2>
-        {/* <Link to={readMoreLink} className="pf-more">
-          Đọc thêm →
-        </Link> */}
+        {/* <Link to={readMoreLink} className="pf-more">Đọc thêm →</Link> */}
       </div>
 
       {loading && <div className="text-muted">Đang tải…</div>}
@@ -107,31 +113,66 @@ export default function LifeHomeSection({
       {!loading && !err && (
         <>
           {variant === "home" ? (
-            // HOME VARIANT — thumbnail + button underneath the image
+            // HOME VARIANT — thumbnail nhỏ + nút dưới ảnh
             <div className="life-list">
-              {posts.map((p) => (
-                <article key={p.id} className="life-card life-card--row">
-                  {/* Left: image + button right below */}
-                  <div className="life-left">
-                    <Link to={`/life/${p.id}`} className="life-thumb">
-                      <img
-                        className="life-img life-img--sm"
-                        src={toDisplayUrl(p.thumb)}
-                        alt={p.title || "Life post"}
-                        loading="lazy"
-                      />
-                    </Link>
+              {posts.map((p) => {
+                const id = `life-${slugify(p.title || String(p.id || ""))}`;
+                return (
+                  <article
+                    id={id}
+                    key={p.id}
+                    className="life-card life-card--row"
+                  >
+                    <div className="life-left">
+                      <Link to={`/life/${p.id}`} className="life-thumb">
+                        <img
+                          className="life-img life-img--sm"
+                          src={toDisplayUrl(p.thumb)}
+                          alt={p.title || "Life post"}
+                          loading="lazy"
+                        />
+                      </Link>
+                      <Link
+                        to={`/life/${p.id}`}
+                        className="btn btn-primary btn-sm life-more-under"
+                      >
+                        Đọc thêm
+                      </Link>
+                    </div>
+
+                    <div className="life-body">
+                      <Link to={`/life/${p.id}`} className="life-title">
+                        {p.title}
+                      </Link>
+                      <div className="life-meta">
+                        {p.created_at
+                          ? new Date(p.created_at).toLocaleDateString("vi-VN")
+                          : ""}{" "}
+                        • Bởi {p.author || "Tác giả"}
+                      </div>
+                      <div className="life-excerpt">
+                        {shortText(p.excerpt, 280)}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            // PAGE VARIANT — ảnh lớn, đầy đủ
+            <div className="life-list">
+              {posts.map((p) => {
+                const id = `life-${slugify(p.title || String(p.id || ""))}`;
+                return (
+                  <article
+                    id={id}
+                    key={p.id}
+                    className="life-card life-card--page"
+                  >
                     <Link
                       to={`/life/${p.id}`}
-                      className="btn btn-primary btn-sm life-more-under"
+                      className="life-title life-title--lg"
                     >
-                      Đọc thêm
-                    </Link>
-                  </div>
-
-                  {/* Right: title + meta + excerpt */}
-                  <div className="life-body">
-                    <Link to={`/life/${p.id}`} className="life-title">
                       {p.title}
                     </Link>
                     <div className="life-meta">
@@ -140,49 +181,26 @@ export default function LifeHomeSection({
                         : ""}{" "}
                       • Bởi {p.author || "Tác giả"}
                     </div>
-                    <div className="life-excerpt">
-                      {shortText(p.excerpt, 280)}
+
+                    <Link to={`/life/${p.id}`} className="life-thumb mt-8">
+                      <img
+                        className="life-img life-img--lg"
+                        src={toDisplayUrl(p.thumb)}
+                        alt={p.title || "Life post"}
+                        loading="lazy"
+                      />
+                    </Link>
+
+                    <div className="life-excerpt mt-8">
+                      {shortText(p.excerpt, 900)}
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            // PAGE VARIANT — big full-width image
-            <div className="life-list">
-              {posts.map((p) => (
-                <article key={p.id} className="life-card life-card--page">
-                  <Link
-                    to={`/life/${p.id}`}
-                    className="life-title life-title--lg"
-                  >
-                    {p.title}
-                  </Link>
-                  <div className="life-meta">
-                    {p.created_at
-                      ? new Date(p.created_at).toLocaleDateString("vi-VN")
-                      : ""}{" "}
-                    • Bởi {p.author || "Tác giả"}
-                  </div>
 
-                  <Link to={`/life/${p.id}`} className="life-thumb mt-8">
-                    <img
-                      className="life-img life-img--lg"
-                      src={toDisplayUrl(p.thumb)}
-                      alt={p.title || "Life post"}
-                      loading="lazy"
-                    />
-                  </Link>
-
-                  <div className="life-excerpt mt-8">
-                    {shortText(p.excerpt, 900)}
-                  </div>
-
-                  <Link to={`/life/${p.id}`} className="btn btn-primary mt-8">
-                    Đọc thêm
-                  </Link>
-                </article>
-              ))}
+                    <Link to={`/life/${p.id}`} className="btn btn-primary mt-8">
+                      Đọc thêm
+                    </Link>
+                  </article>
+                );
+              })}
             </div>
           )}
         </>
